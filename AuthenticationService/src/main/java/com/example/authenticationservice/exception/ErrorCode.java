@@ -2,6 +2,7 @@ package com.example.authenticationservice.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
@@ -35,7 +36,13 @@ public enum ErrorCode {
     TOKEN_INVALID(3005, "Invalid authentication token", HttpStatus.UNAUTHORIZED),
     AUTH_TOKEN_INVALID(3006, "Authentication token is invalid", HttpStatus.UNAUTHORIZED),
     TOKEN_PARSING_ERROR(3007, "Error parsing authentication token", HttpStatus.BAD_REQUEST),
+    UNKNOWN_PROVIDER(3008, "Unknown authentication provider", HttpStatus.BAD_REQUEST),
 
+
+    INVALID_REQUEST(3000, "Invalid request", HttpStatus.BAD_REQUEST),
+
+    REDIRECT_URI_MISMATCH(3009, "Redirect URI mismatch", HttpStatus.BAD_REQUEST),
+    OAUTH_PROVIDER_ERROR(3010, "OAuth provider error", HttpStatus.BAD_REQUEST),
     UNCATEGORIZED_EXCEPTION(9999, "Lỗi không xác định", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;

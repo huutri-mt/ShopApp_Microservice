@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface AuthRepository extends JpaRepository<AuthenUser, Integer> {
     Boolean existsUserByUserName(String userName);
     AuthenUser findByUserName(String userName);
+    AuthenUser getUserById(int id);
 }

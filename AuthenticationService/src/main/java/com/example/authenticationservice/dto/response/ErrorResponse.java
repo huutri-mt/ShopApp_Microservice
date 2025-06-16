@@ -1,15 +1,14 @@
 package com.example.authenticationservice.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ErrorResponse {
-    private int code;
-    private String message;
+    int code;
+    String message;
 }

@@ -1,6 +1,6 @@
 package com.example.profileservice.controller;
 
-import com.example.profileservice.constan.UrlConstan;
+import com.example.profileservice.constan.UrlConstant;
 import com.example.profileservice.dto.request.AddressCreationRequest;
 import com.example.profileservice.service.AddressesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(UrlConstan.API_V1_PROFILE_ADDRESS)
-public class AddressesController {
+@RequestMapping(UrlConstant.API_V1_ADDRESS_INTERNAL)
+public class InternalAddressesController {
 
     @Autowired
     private AddressesService addressesService;

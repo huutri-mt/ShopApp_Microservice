@@ -25,38 +25,43 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    @Value("${valid-duration}")
+    @Value("${jwt.valid-duration}")
     private long VALID_DURATION;
 
-    @Value("${referesh-valid-duration}")
+    @Value("${jwt.refresh-valid-duration}")
     private long REFRESH_VALID_DURATION;
 
     @Autowired
     private InvalidatedTokenRepository invalidatedTokenRepository;
 
     public String generateToken(AuthenUser user) {
-        JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
-        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUserName())
-                .issuer("HT")
-                .issueTime(Date.from(Instant.now()))
-                .expirationTime(new Date(
-                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
-                .jwtID(UUID.randomUUID().toString())
-                .claim("userId", user.getId())
-                .claim("authorities", List.of("ROLE_" + user.getRole()))
-                .build();
-
-        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
-        JWSObject jwsObject = new JWSObject(header, payload);
-
         try {
+            // 1. Header
+            JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
+
+            // 2. Claims
+            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                    .subject(user.getUserName())
+                    .issuer("HT")
+                    .issueTime(Date.from(Instant.now()))
+                    .expirationTime(Date.from(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS)))
+                    .jwtID(UUID.randomUUID().toString())
+                    .claim("userId", user.getId())
+                    .claim("username", user.getUserName())
+                    .claim("authorities", List.of("ROLE_" + user.getRole()))
+                    .build();
+
+            // 3. Sign the token
+            JWSObject jwsObject = new JWSObject(header, new Payload(claimsSet.toJSONObject()));
             jwsObject.sign(new MACSigner(secretKey.getBytes()));
+
             return jwsObject.serialize();
+
         } catch (JOSEException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error generating JWT", e);
         }
     }
+
 
     public boolean validateToken(String token) throws ParseException, JOSEException {
         JWSVerifier jwsVerifier = new MACVerifier(secretKey.getBytes());
@@ -97,5 +102,6 @@ public class JwtUtil {
             throw new AppException(ErrorCode.TOKEN_PARSING_ERROR);
         }
     }
+
 }
 

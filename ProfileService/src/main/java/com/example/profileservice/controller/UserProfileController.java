@@ -1,31 +1,48 @@
 package com.example.profileservice.controller;
 
-import com.example.profileservice.constan.UrlConstan;
-import com.example.profileservice.dto.request.ProfileCreationRequest;
-import com.example.profileservice.entity.UserProfile;
+import com.example.profileservice.constan.UrlConstant;
+import com.example.profileservice.dto.request.UpdateProfileRequest;
+import com.example.profileservice.dto.response.UserProfileResponse;
 import com.example.profileservice.service.UserProfileService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
+@Validated
 @RestController
-@RequestMapping(UrlConstan.API_V1_PROFILE)
+@RequiredArgsConstructor
+@RequestMapping(UrlConstant.API_V1_PROFILE_USER)
 public class UserProfileController {
-    @Autowired
-    private UserProfileService userProfileService;
 
-    @PostMapping("/create")
-    public ResponseEntity<String> createProfile(@RequestBody ProfileCreationRequest request ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userProfileService.createUserProfile(request));
+    private final UserProfileService userProfileService;
+
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserProfileResponse> getUserProfile(
+            @PathVariable Integer userId) {
+        log.info("Fetching profile for user ID: {}", userId);
+        return ResponseEntity.ok(userProfileService.getUserProfileById(userId));
     }
 
-    @GetMapping("/check-email")
-    public ResponseEntity<Boolean> checkEmailExists(@RequestParam String email) {
-        boolean exists = userProfileService.checkEmailExists(email);
-        return ResponseEntity.ok(exists);
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
+    @PutMapping("/{userId}")
+    public ResponseEntity<UserProfileResponse> updateProfile(
+            @RequestBody UpdateProfileRequest request,
+            @PathVariable Integer userId) {
+        log.info("Updating profile for user ID: {}", userId);
+        return ResponseEntity.ok(userProfileService.updateUserProfile(request, userId));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public ResponseEntity<List<UserProfileResponse>> getAllUserProfiles() {
+        log.info("Fetching all user profiles");
+        return ResponseEntity.ok(userProfileService.getAllUserProfiles());
+    }
 }
