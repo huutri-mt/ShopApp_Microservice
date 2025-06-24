@@ -26,7 +26,8 @@ public class SecurityConfig {
 
     // Các endpoint internal dùng Basic Auth
     private static final String[] INTERNAL_ENDPOINTS = {
-            "/api/v1/profile/internal/**"
+            "/api/v1/internal/profile/**",
+            "/api/v1/internal/address/**"
     };
 
     // Các endpoint public không cần xác thực
@@ -109,4 +110,5 @@ public class SecurityConfig {
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
     }
+
 }

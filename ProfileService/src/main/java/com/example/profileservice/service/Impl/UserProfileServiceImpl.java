@@ -1,16 +1,18 @@
 package com.example.profileservice.service.Impl;
 
 import com.example.profileservice.dto.request.ProfileCreationRequest;
-import com.example.profileservice.dto.request.UpdateProfileRequest;
+import com.example.profileservice.dto.request.ProfileUpdateRequest;
 import com.example.profileservice.dto.response.UserProfileResponse;
 import com.example.profileservice.entity.UserProfile;
 import com.example.profileservice.exception.AppException;
 import com.example.profileservice.exception.ErrorCode;
 import com.example.profileservice.repository.UserProfileRepository;
 import com.example.profileservice.service.UserProfileService;
+import com.example.profileservice.util.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,7 +31,6 @@ public class UserProfileServiceImpl implements UserProfileService {
         if(request == null) {
             throw new AppException(ErrorCode.INVALID_PROFILE_DATA);
         }
-        UserProfile userProfile = new UserProfile();
 
         if (userProfileRepository.existsUserProfileByEmail(request.getEmail())) {
             throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
@@ -43,7 +44,6 @@ public class UserProfileServiceImpl implements UserProfileService {
                 .phoneNumber(request.getPhoneNumber())
                 .dateOfBirth(request.getDateOfBirth())
                 .gender(request.getGender())
-                    .createAt(LocalDate.now())
                 .build()
         );
         return "User profile created successfully";
@@ -53,12 +53,13 @@ public class UserProfileServiceImpl implements UserProfileService {
         return userProfileRepository.existsUserProfileByEmail(email);
     }
 
-    public UserProfileResponse getUserProfileById(int id) {
-        UserProfile userProfile = userProfileRepository.findById(id)
+    public UserProfileResponse getMyInfo() {
+        Integer userId = SecurityUtil.getCurrentUserId();
+
+        UserProfile userProfile = userProfileRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
 
         return UserProfileResponse.builder()
-
                 .fullName(userProfile.getFullName())
                 .email(userProfile.getEmail())
                 .phoneNumber(userProfile.getPhoneNumber())
@@ -66,10 +67,14 @@ public class UserProfileServiceImpl implements UserProfileService {
                 .addresses(userProfile.getAddresses())
                 .build();
     }
-    public UserProfileResponse updateUserProfile(UpdateProfileRequest request, int userId) {
+
+    public UserProfileResponse updateUserProfile(ProfileUpdateRequest request ) {
+        log.info("Updating user profile with request: {}", request);
         if (request == null) {
             throw new AppException(ErrorCode.INVALID_PROFILE_DATA);
         }
+
+        Integer userId = SecurityUtil.getCurrentUserId();
 
         UserProfile userProfile = userProfileRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
@@ -120,6 +125,14 @@ public class UserProfileServiceImpl implements UserProfileService {
                         .dateOfBirth(userProfile.getDateOfBirth())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public String deleteUserProfile(Integer userId) {
+        UserProfile userProfile = userProfileRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
+
+        userProfileRepository.delete(userProfile);
+        return "User profile deleted successfully";
     }
 
 }

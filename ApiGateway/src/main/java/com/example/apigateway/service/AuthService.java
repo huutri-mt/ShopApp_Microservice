@@ -3,7 +3,6 @@ package com.example.apigateway.service;
 import com.example.apigateway.dto.request.IntrospectRequest;
 import com.example.apigateway.dto.response.IntrospectResponse;
 import com.example.apigateway.repository.AuthClient;
-import feign.auth.BasicAuthRequestInterceptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

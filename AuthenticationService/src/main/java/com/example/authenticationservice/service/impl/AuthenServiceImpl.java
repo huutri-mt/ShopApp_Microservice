@@ -24,7 +24,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
@@ -296,9 +298,51 @@ public class AuthenServiceImpl implements AuthService {
         }
 
         authenUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        authenUser.setLastPasswordChange(LocalDate.now());
+
         authRepository.save(authenUser);
 
         return "Password changed successfully";
+    }
+    public String blockUser(Integer userId) {
+        AuthenUser authenUser = authRepository.getUserById(userId);
+        if (authenUser == null) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+        authenUser.setEnabled(false);
+        authRepository.save(authenUser);
+        return "User blocked successfully";
+    }
+    public String createPassword(CreatePasswordRequest request) {
+        if (request == null || !StringUtils.hasText(request.getPassword())) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        AuthenUser authenUser = authRepository.findByUserName(userName);
+        if (authenUser == null) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        if (StringUtils.hasText(authenUser.getPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_EXISTED);
+        }
+        authenUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        authRepository.save(authenUser);
+
+        return "Password created successfully";
+    }
+
+    public String deleteUser(Integer userId) {
+        AuthenUser authenUser = authRepository.getUserById(userId);
+        if (authenUser == null) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+        authRepository.delete(authenUser);
+        return "User deleted successfully";
     }
 }
 

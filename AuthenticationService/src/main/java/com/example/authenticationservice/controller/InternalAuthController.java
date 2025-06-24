@@ -5,9 +5,7 @@ import com.example.authenticationservice.dto.request.*;
 import com.example.authenticationservice.dto.response.IntrospectResponse;
 import com.example.authenticationservice.dto.response.LoginResponse;
 import com.example.authenticationservice.service.AuthService;
-
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -32,10 +30,13 @@ public class InternalAuthController {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(401).build();
         }
-
-        // Nếu cần, bạn có thể log tên user xác thực từ Basic Auth
-        String username = authentication.getName(); // Tên user nội bộ
         return ResponseEntity.ok(authService.introspect(request));
+    }
+
+    @DeleteMapping("/delete-user/{userId}")
+    public ResponseEntity<String> deleteUser(@PathVariable Integer userId) {
+        authService.deleteUser(userId);
+        return ResponseEntity.ok("User deleted successfully");
     }
 }
 

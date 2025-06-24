@@ -1,7 +1,7 @@
 package com.example.profileservice.controller;
 
 import com.example.profileservice.constan.UrlConstant;
-import com.example.profileservice.dto.request.UpdateProfileRequest;
+import com.example.profileservice.dto.request.ProfileUpdateRequest;
 import com.example.profileservice.dto.response.UserProfileResponse;
 import com.example.profileservice.service.UserProfileService;
 import lombok.RequiredArgsConstructor;
@@ -22,27 +22,27 @@ public class UserProfileController {
 
     private final UserProfileService userProfileService;
 
-    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserProfileResponse> getUserProfile(
-            @PathVariable Integer userId) {
-        log.info("Fetching profile for user ID: {}", userId);
-        return ResponseEntity.ok(userProfileService.getUserProfileById(userId));
+
+    @GetMapping("/myInfo")
+    public ResponseEntity<UserProfileResponse> getMyInfo() {
+        return ResponseEntity.ok(userProfileService.getMyInfo());
     }
 
     @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
-    @PutMapping("/{userId}")
+    @PutMapping("/update")
     public ResponseEntity<UserProfileResponse> updateProfile(
-            @RequestBody UpdateProfileRequest request,
-            @PathVariable Integer userId) {
-        log.info("Updating profile for user ID: {}", userId);
-        return ResponseEntity.ok(userProfileService.updateUserProfile(request, userId));
+            @RequestBody ProfileUpdateRequest request) {
+        return ResponseEntity.ok(userProfileService.updateUserProfile(request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<UserProfileResponse>> getAllUserProfiles() {
-        log.info("Fetching all user profiles");
         return ResponseEntity.ok(userProfileService.getAllUserProfiles());
+    }
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity<String> deleteUserProfile(@PathVariable Integer userId) {
+        return ResponseEntity.ok (userProfileService.deleteUserProfile(userId));
     }
 }

@@ -14,4 +14,7 @@ public interface AuthService {
     IntrospectResponse introspect(IntrospectRequest request);
     LoginResponse outboundAuthenticate(String code, String provider);
     String changePassword(ChangePasswordRequest request);
+    String blockUser(Integer userId);
+    String createPassword(CreatePasswordRequest request);
+    String deleteUser(Integer userId);
 }

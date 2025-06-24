@@ -27,9 +27,6 @@ public class InternalUserProfileController {
         return ResponseEntity.ok(exists);
     }
 
-    /*@PostMapping("/update")
-    public ResponseEntity<String> updateProfile(@RequestBody UpdateProfileRequest request) {
-        return ResponseEntity.ok(userProfileService.updateUserProfile(request));
-    }*/
+
 
 }

@@ -39,7 +39,13 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     String[] publicUrls = {
             "/auth/login",
             "/auth/register",
-            "/auth/outbound/authentication"
+            "/auth/outbound/authentication",
+            "/user/product",
+            "/user/product/price-range",
+            "/user/product/{productId}",
+            "/user/category",
+            "/user/category/{categoryId}",
+
     };
 
     @Value("${app.api-prefix}")
