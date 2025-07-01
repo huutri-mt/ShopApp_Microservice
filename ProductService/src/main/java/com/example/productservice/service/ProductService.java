@@ -16,4 +16,5 @@ public interface ProductService {
     String updateProduct (Integer productId, ProductUpdateRequest request);
     String deleteProduct(Integer productId);
     String updateProductStock (Integer productId, Integer quantity);
+    Boolean checkProduct(Integer productId, Integer quantity);
 }

@@ -23,11 +23,11 @@ public class InternalProductController {
         return ResponseEntity.ok(productResponse);
     }
 
-    @GetMapping("/checkExists/{productId}")
-    public ResponseEntity<Boolean> checkProductExists(@PathVariable Integer productId) {
+    @GetMapping("/checkProduct")
+    public ResponseEntity<Boolean> checkProduct(@RequestParam Integer productId, @RequestParam Integer quantity) {
         log.info("Checking if product exists with ID: {}", productId);
-        boolean exists = productService.getProductById(productId) != null;
-        return ResponseEntity.ok(exists);
+
+        return ResponseEntity.ok(productService.checkProduct(productId, quantity));
     }
 
     @PutMapping ("/updateStock/{productId}")

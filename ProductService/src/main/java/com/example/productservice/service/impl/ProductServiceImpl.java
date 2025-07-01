@@ -175,7 +175,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     public String updateProductStock(Integer productId, Integer quantity) {
-        if (quantity == null || quantity <= 0) {
+        if (quantity == null) {
             throw new AppException(ErrorCode.INVALID_QUANTITY);
         }
         log.info("Updating stock for product with id {}", productId);
@@ -195,6 +195,17 @@ public class ProductServiceImpl implements ProductService {
             return "Failed to update product stock";
         }
     }
-
-
+    public Boolean checkProduct (Integer productId, Integer quantity) {
+        log.info("Checking if product exists with id {}", productId);
+        if (productId == null) {
+            throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        if (product.getQuantity() < quantity || product.getQuantity() == 0) {
+            log.error("Insufficient stock for product with id {}", productId);
+            throw new AppException(ErrorCode.INSUFFICIENT_STOCK);
+        }
+        return true;
+    }
 }

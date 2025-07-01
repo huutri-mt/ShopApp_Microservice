@@ -109,36 +109,45 @@ public class AddressesServiceImpl implements AddressesService {
     }
 
 
-    public List<AddressResponse> getAddressByUserId(Integer userId) {
-        if (userId == null) {
-            throw new AppException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        List<Addresses> addressList = addressesRepository.findByUserProfile_Id(userId);
-        if (addressList.isEmpty()) {
+    public AddressResponse getAddressById(Integer addressId) {
+        if (addressId == null) {
             throw new AppException(ErrorCode.ADDRESS_NOT_FOUND);
         }
 
-        return addressList.stream().map(addr -> AddressResponse.builder()
-                .contactName(addr.getContactName())
-                .contactPhone(addr.getContactPhone())
-                .addressLine1(addr.getAddressLine1())
-                .addressLine2(addr.getAddressLine2())
-                .city(addr.getCity())
-                .province(addr.getProvince())
-                .postalCode(addr.getPostalCode())
-                .country(addr.getCountry())
-                .isDefault(addr.getIsDefault())
-                .build()
-        ).toList();
+        Addresses address = addressesRepository.findAddressById(addressId);
+        if (address == null) {
+            throw new AppException(ErrorCode.ADDRESS_NOT_FOUND);
+        }
+        log.info("Retrieved address with id {}", addressId);
+        return AddressResponse.builder()
+                .contactName(address.getContactName())
+                .contactPhone(address.getContactPhone())
+                .addressLine1(address.getAddressLine1())
+                .addressLine2(address.getAddressLine2())
+                .city(address.getCity())
+                .province(address.getProvince())
+                .postalCode(address.getPostalCode())
+                .country(address.getCountry())
+                .isDefault(address.getIsDefault() != null ? address.getIsDefault() : false)
+                .build();
+
     }
 
-    public Boolean checkAddressExists(Integer userId) {
+    public Boolean checkAddress(Integer userId, Integer addressId) {
         if (userId == null) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
-        return addressesRepository.existsAddressesByUserProfile_Id(userId);
+        if (addressId == null) {
+            throw new AppException(ErrorCode.ADDRESS_NOT_FOUND);
+        }
+
+        Addresses address = addressesRepository.findById(addressId)
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+
+        return Integer.valueOf(address.getUserProfile().getId()).equals(userId);
+
     }
+
 
     public String deleteAddress(Integer addressId) {
         Addresses address = addressesRepository.findById(addressId).orElseThrow(

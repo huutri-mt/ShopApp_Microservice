@@ -1,5 +1,6 @@
 package com.example.profileservice.entity;
 
+import com.example.profileservice.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -37,7 +38,7 @@ public class UserProfile {
 
     @Enumerated(EnumType.STRING) // Sử dụng enum cho giới tính
     @Column(nullable = false, length = 10)
-    String gender;
+    Gender gender;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false) // Sửa thành created_at

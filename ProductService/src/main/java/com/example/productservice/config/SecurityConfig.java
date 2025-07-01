@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(httpBasic -> httpBasic
                         .authenticationEntryPoint(basicAuthenticationEntryPoint())
-                        .realmName("Profile Service Internal API")
+                        .realmName("Product Service Internal API")
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwtConfigurer -> jwtConfigurer
@@ -86,7 +86,7 @@ public class SecurityConfig {
     @Bean
     public BasicAuthenticationEntryPoint basicAuthenticationEntryPoint() {
         BasicAuthenticationEntryPoint entryPoint = new BasicAuthenticationEntryPoint();
-        entryPoint.setRealmName("Profile Service Internal API");
+        entryPoint.setRealmName("Product Service Internal API");
         return entryPoint;
     }
 
@@ -103,7 +103,7 @@ public class SecurityConfig {
 
     public static class JwtAuthenticationEntryPoint extends BasicAuthenticationEntryPoint {
         public JwtAuthenticationEntryPoint() {
-            setRealmName("Profile Service");
+            setRealmName("Product Service");
         }
     }
     @Bean

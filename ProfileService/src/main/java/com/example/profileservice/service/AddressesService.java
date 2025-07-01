@@ -16,8 +16,8 @@ import java.util.Optional;
 public interface AddressesService {
     String createAddress(AddressCreationRequest request);
     String updateAdderss(Integer addressId , AddressUpdateRequest request);
-    List<AddressResponse> getAddressByUserId(Integer userId);
-    Boolean checkAddressExists(Integer userId);
+    AddressResponse getAddressById(Integer addressId);
+    Boolean checkAddress(Integer userId, Integer addressId);
     String deleteAddress(Integer addressId);
 
 }

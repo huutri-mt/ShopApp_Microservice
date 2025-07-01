@@ -1,6 +1,7 @@
 package com.example.profileservice.dto.response;
 
 import com.example.profileservice.entity.Addresses;
+import com.example.profileservice.enums.Gender;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +19,7 @@ public class UserProfileResponse {
     String fullName;
     String email;
     String phoneNumber;
-    String gender;
+    Gender gender;
     LocalDate dateOfBirth;
 
     List<Addresses> addresses;
