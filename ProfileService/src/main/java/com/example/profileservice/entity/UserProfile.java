@@ -36,23 +36,23 @@ public class UserProfile {
     @Column(name = "date_of_birth")
     LocalDate dateOfBirth;
 
-    @Enumerated(EnumType.STRING) // Sử dụng enum cho giới tính
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     Gender gender;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false) // Sửa thành created_at
-    LocalDate createdAt; // Nâng cấp từ LocalDate -> LocalDateTime
+    @Column(name = "created_at", updatable = false)
+    LocalDate createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at") // Sửa thành updated_at
+    @Column(name = "updated_at")
     LocalDate updatedAt;
 
     @OneToMany(
             mappedBy = "userProfile",
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY,
-            orphanRemoval = true // Tự động xóa address khi bị xóa khỏi list
+            orphanRemoval = true
     )
     List<Addresses> addresses;
 

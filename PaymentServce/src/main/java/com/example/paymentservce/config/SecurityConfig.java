@@ -1,4 +1,4 @@
-package com.example.orderservice.config;
+package com.example.paymentservce.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -25,11 +25,12 @@ public class SecurityConfig {
 
     // Các endpoint internal dùng Basic Auth
     private static final String[] INTERNAL_ENDPOINTS = {
-        "/api/v1/internal/order/**"
+
     };
 
     // Các endpoint public không cần xác thực
     private static final String[] PUBLIC_ENDPOINTS = {
+        "/api/v1/payments/**"
     };
 
     @Value("${auth.username}")
@@ -56,7 +57,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(httpBasic -> httpBasic
                         .authenticationEntryPoint(basicAuthenticationEntryPoint())
-                        .realmName("Order Service Internal API")
+                        .realmName("Payment Service Internal API")
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwtConfigurer -> jwtConfigurer
@@ -82,7 +83,7 @@ public class SecurityConfig {
     @Bean
     public BasicAuthenticationEntryPoint basicAuthenticationEntryPoint() {
         BasicAuthenticationEntryPoint entryPoint = new BasicAuthenticationEntryPoint();
-        entryPoint.setRealmName("Order Service Internal API");
+        entryPoint.setRealmName("Payment Service Internal API");
         return entryPoint;
     }
 
@@ -99,7 +100,7 @@ public class SecurityConfig {
 
     public static class JwtAuthenticationEntryPoint extends BasicAuthenticationEntryPoint {
         public JwtAuthenticationEntryPoint() {
-            setRealmName("Order Service");
+            setRealmName("Payment Service");
         }
     }
     @Bean

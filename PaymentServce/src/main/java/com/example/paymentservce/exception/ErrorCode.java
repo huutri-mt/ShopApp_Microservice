@@ -1,4 +1,4 @@
-package com.example.orderservice.exception;
+package com.example.paymentservce.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,7 +36,9 @@ public enum ErrorCode {
     ORDER_NOT_FOUND (7001, "Không tìm thấy đơn hàng", HttpStatus.NOT_FOUND),
     ORDER_CANCELLATION_NOT_ALLOWED (7002, "Không thể hủy đơn hàng", HttpStatus.BAD_REQUEST),
     ORDER_STATUS_UPDATE_NOT_ALLOWED (7003, "Không thể cập nhật trạng thái đơn hàng", HttpStatus.BAD_REQUEST),
+    ORDER_PAYMENT_FAILED (7004, "Thanh toán đơn hàng thất bại", HttpStatus.BAD_REQUEST),
     // --- Lỗi khác ---
+    VNPAY_SIGNING_FAILED (8001, "Lỗi ký VNPAY", HttpStatus.INTERNAL_SERVER_ERROR),
     UNCATEGORIZED_EXCEPTION(9999, "Lỗi không xác định", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;

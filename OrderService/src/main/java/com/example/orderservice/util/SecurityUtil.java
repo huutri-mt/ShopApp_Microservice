@@ -1,4 +1,4 @@
-package com.example.orderservice.utill;
+package com.example.orderservice.util;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -9,7 +9,7 @@ public class SecurityUtil {
     public static Integer getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
-            return null; // hoặc throw custom exception nếu cần
+            return null;
         }
         Object userIdObj = jwt.getClaim("userId");
         if (userIdObj instanceof Number number) {

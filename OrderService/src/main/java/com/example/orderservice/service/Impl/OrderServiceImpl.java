@@ -2,10 +2,7 @@ package com.example.orderservice.service.Impl;
 
 import com.example.orderservice.dto.request.OrderRequest;
 import com.example.orderservice.dto.request.RemoveCartItemRequest;
-import com.example.orderservice.dto.response.InternalCartItemResponse;
-import com.example.orderservice.dto.response.InternalCartResponse;
-import com.example.orderservice.dto.response.OrderItemResponse;
-import com.example.orderservice.dto.response.OrderResponse;
+import com.example.orderservice.dto.response.*;
 import com.example.orderservice.entity.Order;
 import com.example.orderservice.entity.OrderItem;
 import com.example.orderservice.enums.OrderStatus;
@@ -17,12 +14,11 @@ import com.example.orderservice.repository.httpClient.AddressClient;
 import com.example.orderservice.repository.httpClient.CartClient;
 import com.example.orderservice.repository.httpClient.ProductClient;
 import com.example.orderservice.service.OrderService;
-import com.example.orderservice.utill.SecurityUtil;
+import com.example.orderservice.util.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -45,7 +41,9 @@ public class OrderServiceImpl implements OrderService {
 
     public String createOrder(OrderRequest request) {
         int userId = request.getUserId();
-
+        if(userId != SecurityUtil.getCurrentUserId()){
+            throw new AppException(ErrorCode.FORBIDDEN);
+        }
         InternalCartResponse response = cartClient.getInternalCart(userId).getBody();
         if (response == null || response.getItems().isEmpty()) {
             log.error("No items found in cart for user ID: {}", userId);
@@ -162,15 +160,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public String cancleOrder(int orderId) {
-        //int userId = SecurityUtil.getCurrentUserId();
+        int userId = SecurityUtil.getCurrentUserId();
         log.info("Cancelling order with ID: {}", orderId);
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-       /* if(userId != order.getUserId()) {
+        if(userId != order.getUserId()) {
             log.error("User ID {} does not have permission to cancel order ID {}", userId, orderId);
             throw new AppException(ErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
-        }*/
+        }
         if (order.getStatus() != OrderStatus.PENDING) {
             log.error("Cannot cancel order with ID {} as it is not in PENDING status", orderId);
             throw new AppException(ErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
@@ -188,6 +186,46 @@ public class OrderServiceImpl implements OrderService {
 
         log.info("Order with ID {} cancelled successfully", orderId);
         return "Order cancelled successfully";
+    }
+
+    public InternalOrderResponse getOrderById (int orderId) {
+        log.info("Retrieving order by ID: {}", orderId);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        InternalOrderResponse response = new InternalOrderResponse();
+        response.setOrderId(order.getId());
+        response.setUserId(order.getUserId());
+        response.setTotalPrice(order.getTotalAmount());
+        response.setOrderStatus(order.getStatus());
+        response.setPaymentMethod(order.getPaymentMethod());
+
+        return response;
+    }
+
+    public String updateOrderStatus(int orderId, OrderStatus status) {
+        log.info("Updating order status for order ID: {}", orderId);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (order.getStatus() == OrderStatus.CANCELED || order.getStatus() == OrderStatus.DELIVERED) {
+            log.error("Cannot update status for cancelled or delivered orders");
+            throw new AppException(ErrorCode.ORDER_STATUS_UPDATE_NOT_ALLOWED);
+        }
+        if(status == OrderStatus.CANCELED) {
+            order.setStatus(status);
+            List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+            for (OrderItem item : orderItems) {
+                productClient.updateProductStock(item.getProductId(), -item.getQuantity());
+            }
+            orderRepository.save(order);
+            log.info("Order status updated to {} for order ID: {}", status, orderId);
+            return "Order status updated successfully";
+        }
+        order.setStatus(status);
+        orderRepository.save(order);
+        log.info("Order status updated to {} for order ID: {}", status, orderId);
+        return "Order status updated successfully";
     }
 
 }

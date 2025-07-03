@@ -4,7 +4,7 @@ import com.example.orderservice.constan.UrlConstant;
 import com.example.orderservice.dto.request.OrderRequest;
 import com.example.orderservice.dto.response.OrderResponse;
 import com.example.orderservice.service.OrderService;
-import com.example.orderservice.utill.SecurityUtil;
+import com.example.orderservice.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,5 +45,6 @@ public class UserOrderController {
         orderService.cancleOrder(orderId);
         return ResponseEntity.ok("Order cancelled successfully");
     }
+
 
 }
