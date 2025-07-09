@@ -1,4 +1,4 @@
-package com.example.chatservice.dto;
+package com.example.notificationservice.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
@@ -9,10 +9,8 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Getter
 @Setter
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ApiResponse<T> {
-    int code = 200;
-    String message;
-    T data;
+public class BaseEmailRequest {
+    String to;
 }
+

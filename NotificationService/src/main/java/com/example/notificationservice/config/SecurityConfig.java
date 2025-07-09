@@ -30,7 +30,7 @@ public class SecurityConfig {
 
     // Các endpoint public không cần xác thực
     private static final String[] PUBLIC_ENDPOINTS = {
-
+        "/api/v1/mail/**"
     };
 
     @Value("${auth.username}")

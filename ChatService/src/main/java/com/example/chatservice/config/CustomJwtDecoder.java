@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
 @Component
 public class CustomJwtDecoder implements JwtDecoder {
 
@@ -25,7 +24,6 @@ public class CustomJwtDecoder implements JwtDecoder {
             SignedJWT signedJWT = SignedJWT.parse(token);
             JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
 
-            // Extract authorities from claims
             List<String> authorities = extractAuthorities(claimsSet);
 
             return new Jwt(

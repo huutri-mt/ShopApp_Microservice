@@ -17,26 +17,31 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    // Các endpoint internal dùng Basic Auth
-    private static final String[] INTERNAL_ENDPOINTS = {
+    private static final String[] INTERNAL_ENDPOINTS = {};
 
-    };
-
-    // Các endpoint public không cần xác thực
     private static final String[] PUBLIC_ENDPOINTS = {
-        "/chat/**"
+            "/chat/**",
+            "/ws-chat/**",
+            "/topic/**",
+            "/queue/**",
+            "/app/**",
     };
 
     @Value("${auth.username}")
     private String authUsername;
 
-        @Value("${auth.password}")
+    @Value("${auth.password}")
     private String authPassword;
 
     private final CustomJwtDecoder customJwtDecoder;
@@ -46,28 +51,44 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .authorizeHttpRequests(request -> request
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("*"));
+        config.setAllowedMethods(List.of("*"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(INTERNAL_ENDPOINTS).authenticated()
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .httpBasic(httpBasic -> httpBasic
                         .authenticationEntryPoint(basicAuthenticationEntryPoint())
-                        .realmName("Payment Service Internal API")
+                        .realmName("Chat Service Internal API")
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwtConfigurer -> jwtConfigurer
+                        .jwt(jwt -> jwt
                                 .decoder(customJwtDecoder)
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
                 );
 
-        return httpSecurity.build();
+        return http.build();
     }
 
     @Bean
@@ -83,7 +104,7 @@ public class SecurityConfig {
     @Bean
     public BasicAuthenticationEntryPoint basicAuthenticationEntryPoint() {
         BasicAuthenticationEntryPoint entryPoint = new BasicAuthenticationEntryPoint();
-        entryPoint.setRealmName("Payment Service Internal API");
+        entryPoint.setRealmName("Chat Service Internal API");
         return entryPoint;
     }
 
@@ -100,12 +121,12 @@ public class SecurityConfig {
 
     public static class JwtAuthenticationEntryPoint extends BasicAuthenticationEntryPoint {
         public JwtAuthenticationEntryPoint() {
-            setRealmName("Payment Service");
+            setRealmName("Chat Service");
         }
     }
+
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
     }
-
 }

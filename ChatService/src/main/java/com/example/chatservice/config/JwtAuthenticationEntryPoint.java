@@ -1,6 +1,6 @@
 package com.example.chatservice.config;
 
-import com.example.chatservice.dto.ApiResponse;
+import com.example.chatservice.dto.response.ApiResponse;
 import com.example.chatservice.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;

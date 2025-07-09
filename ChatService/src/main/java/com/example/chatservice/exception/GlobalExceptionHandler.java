@@ -1,7 +1,7 @@
 package com.example.chatservice.exception;
 
 
-import com.example.chatservice.dto.ErrorResponse;
+import com.example.chatservice.dto.response.ErrorResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
