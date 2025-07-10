@@ -2,7 +2,6 @@ package com.example.paymentservce.controller;
 
 
 import com.example.paymentservce.constan.UrlConstant;
-import com.example.paymentservce.dto.request.InitPaymentRequest;
 import com.example.paymentservce.dto.response.PaymentResponse;
 import com.example.paymentservce.service.PaymentHandlerService;
 import com.example.paymentservce.util.RequestUtil;

@@ -27,6 +27,7 @@ public enum ErrorCode {
     USER_CREATION_FAILED(2005, "Tạo người dùng thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     ADDRESS_NOT_FOUND(2006, "Không tìm thấy địa chỉ", HttpStatus.NOT_FOUND),
     ADDRESS_ALREADY_EXISTS(2007, "Địa chỉ đã tồn tại", HttpStatus.CONFLICT),
+    INVALID_EMAIL (2008, "Email không hợp lệ", HttpStatus.BAD_REQUEST),
 
     // --- Lỗi xác thực & phân quyền ---
     UNAUTHORIZED(3001, "Không có quyền truy cập", HttpStatus.UNAUTHORIZED),

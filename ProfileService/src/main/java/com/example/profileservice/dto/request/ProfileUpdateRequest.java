@@ -30,5 +30,5 @@ public class ProfileUpdateRequest {
     @Pattern(regexp = "^(NAM|NỮ|KHÁC)$",
             flags = Pattern.Flag.CASE_INSENSITIVE,
             message = "Giới tính phải là NAM, NỮ hoặc KHÁC")
-    Gender gender;
+    String gender;
 }

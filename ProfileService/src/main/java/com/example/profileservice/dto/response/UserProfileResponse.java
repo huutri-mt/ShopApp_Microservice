@@ -19,7 +19,7 @@ public class UserProfileResponse {
     String fullName;
     String email;
     String phoneNumber;
-    Gender gender;
+    String gender;
     LocalDate dateOfBirth;
 
     List<Addresses> addresses;

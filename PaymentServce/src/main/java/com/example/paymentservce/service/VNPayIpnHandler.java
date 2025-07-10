@@ -1,19 +1,26 @@
 package com.example.paymentservce.service;
 
 
+import com.example.event.dto.NotificationEvent;
 import com.example.paymentservce.constan.VNPayParams;
 import com.example.paymentservce.constan.VnpIpnResponseConst;
+import com.example.paymentservce.dto.response.InternalOrderResponse;
 import com.example.paymentservce.dto.response.IpnResponse;
+import com.example.paymentservce.dto.response.UserProfileResponseInternal;
 import com.example.paymentservce.entity.Payment;
 import com.example.paymentservce.enums.OrderStatus;
 import com.example.paymentservce.enums.PaymentMethod;
 import com.example.paymentservce.exception.AppException;
 import com.example.paymentservce.repository.PaymentRepository;
 import com.example.paymentservce.repository.client.OrderClient;
+import com.example.paymentservce.repository.client.ProfileClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -24,6 +31,8 @@ public class VNPayIpnHandler implements IpnHandler {
     private final OrderClient orderClient;
     private final VNPayService vnPayService;
     private final PaymentRepository paymentRepository;
+    private final ProfileClient profileClient;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public IpnResponse process(Map<String, String> params) {
         if (!vnPayService.verifyIpn(params)) {
@@ -53,6 +62,27 @@ public class VNPayIpnHandler implements IpnHandler {
 
                 paymentRepository.save(payment);
                 log.info("[VNPay IPN] Successfully processed payment for order: {}", orderId);
+
+                // Gui qua kafka notification
+                InternalOrderResponse order = orderClient.getOrderById((int)orderId).getBody();
+                UserProfileResponseInternal userProfileResponseInternal = profileClient.getProfile(order.getUserId()).getBody();
+                Map<String, Object> data = new HashMap<>();
+                data.put("fullName", userProfileResponseInternal.getFullName());
+                data.put("orderId", order.getOrderId());
+                data.put("paymentTime", LocalDate.now());
+
+                NotificationEvent notificationEvent = NotificationEvent.builder()
+                        .channel("email")
+                        .recipient(userProfileResponseInternal.getEmail())
+                        .template("payment_success")
+                        .data(data)
+                        .build();
+                try {
+                    kafkaTemplate.send("notification-delivery", notificationEvent);
+                } catch (Exception e) {
+                    log.error("Failed to send Kafka notification event", e);
+                }
+
                 return VnpIpnResponseConst.SUCCESS;
             } else {
                 log.warn("[VNPay IPN] Payment failed. ResponseCode: {}, Status: {}", responseCode, transactionStatus);

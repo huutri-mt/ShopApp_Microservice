@@ -1,5 +1,6 @@
 package com.example.orderservice.service.Impl;
 
+import com.example.event.dto.NotificationEvent;
 import com.example.orderservice.dto.request.OrderRequest;
 import com.example.orderservice.dto.request.RemoveCartItemRequest;
 import com.example.orderservice.dto.response.*;
@@ -13,17 +14,20 @@ import com.example.orderservice.repository.OrderRepository;
 import com.example.orderservice.repository.httpClient.AddressClient;
 import com.example.orderservice.repository.httpClient.CartClient;
 import com.example.orderservice.repository.httpClient.ProductClient;
+import com.example.orderservice.repository.httpClient.ProfileClient;
 import com.example.orderservice.service.OrderService;
 import com.example.orderservice.util.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-
-import java.beans.Transient;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Primary
@@ -39,6 +43,11 @@ public class OrderServiceImpl implements OrderService {
     private ProductClient productClient;
     @Autowired
     private AddressClient addressClient;
+    @Autowired
+    private ProfileClient profileClient;
+    @Autowired
+    private KafkaTemplate<String, Object> kafkaTemplate;
+
 
     public String createOrder(OrderRequest request) {
         int userId = request.getUserId();
@@ -50,17 +59,20 @@ public class OrderServiceImpl implements OrderService {
             log.error("No items found in cart for user ID: {}", userId);
             throw new AppException(ErrorCode.CART_EMPTY);
         }
+        log.info("Cart retrieved successfully for user ID: {}", userId);
         // Kiểm tra địa chỉ có tồn tại không
         Boolean isValidAddress = addressClient.checkAddress(request.getUserId(), request.getShippingAddress()).getBody();
         if (isValidAddress == null || !isValidAddress) {
             throw new AppException(ErrorCode.INVALID_SHIPPING_ADDRESS);
         }
+        log.info("Shipping address is valid for user ID: {}", userId);
 
         // Lọc các sản phẩm được chọn trong giỏ hàng
         List<Integer> selectedProductIds = request.getSelectedItems();
         List<InternalCartItemResponse> selectedItems = response.getItems().stream()
                 .filter(item -> selectedProductIds.contains(item.getProductId()))
                 .toList();
+        log.info("Selected items for order creation: {}", selectedItems);
 
         if (selectedItems.isEmpty()) {
             log.error("Selected items do not match cart items for user ID: {}", userId);
@@ -76,8 +88,6 @@ public class OrderServiceImpl implements OrderService {
                 throw new AppException(ErrorCode.PRODUCT_NOT_AVAILABLE);
             }
         }
-
-
 
         log.info("Creating order for cart ID: {}", response.getCartId());
         Order order = new Order();
@@ -109,6 +119,39 @@ public class OrderServiceImpl implements OrderService {
                 response.getCartId(),
                 selectedProductIds
         ));
+
+        // Gui qua kafka notification
+        List<Map<String, Object>> products = new ArrayList<>();
+        for (InternalCartItemResponse item : selectedItems) {
+            Map<String, Object> productData = new HashMap<>();
+            ProductResponse productResponse = productClient.getInternalProductInfo(item.getProductId()).getBody();
+            productData.put("name",productResponse.getName());
+            productData.put("quantity", item.getQuantity());
+            productData.put("price", item.getPriceAtAdded());
+            productData.put("totalprice", item.getPriceAtAdded()* item.getQuantity());
+            products.add(productData);
+        }
+
+        UserProfileResponseInternal userProfileResponseInternal = profileClient.getProfile(userId).getBody();
+        Map<String, Object> data = new HashMap<>();
+        data.put("fullName", userProfileResponseInternal.getFullName());
+        data.put("orderId", order.getId());
+        data.put("products", products);
+        data.put("totalPrice", totalPrice);
+
+        NotificationEvent notificationEvent = NotificationEvent.builder()
+                .channel("email")
+                .recipient(userProfileResponseInternal.getEmail())
+                .template("order_success")
+                .data(data)
+                .build();
+        try {
+            kafkaTemplate.send("notification-delivery", notificationEvent);
+        } catch (Exception e) {
+            log.error("Failed to send Kafka notification event", e);
+        }
+
+
         log.info("Order created successfully with ID: {}", order.getId());
         return "Order created successfully for cart ID: " + response.getCartId();
     }

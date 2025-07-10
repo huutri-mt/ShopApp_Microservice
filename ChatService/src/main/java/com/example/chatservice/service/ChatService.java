@@ -1,16 +1,22 @@
 package com.example.chatservice.service;
 
 import com.example.chatservice.dto.response.ChatMessage;
+import com.example.chatservice.dto.response.UserProfileResponseInternal;
 import com.example.chatservice.entity.Message;
 import com.example.chatservice.repository.MessageRepository;
+import com.example.chatservice.repository.httpClient.ProfileClient;
+import com.example.event.dto.NotificationEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 @Slf4j
@@ -19,6 +25,9 @@ import java.util.Map;
 public class ChatService {
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageRepository messageRepository;
+    private final ProfileClient profileClient;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
 
     @Transactional
     public Message sendMessage(ChatMessage message, int senderId, List<String> roles) {
@@ -39,14 +48,34 @@ public class ChatService {
         if ("ADMIN".equals(senderRole)) {
             saved.setStatus(Message.MessageStatus.DELIVERED);
             messageRepository.save(saved);
+            UserProfileResponseInternal userProfileResponseInternal = profileClient.getProfile(senderId).getBody();
 
             messagingTemplate.convertAndSendToUser(
                     message.getReceiverId().toString(),
                     "/queue/private-messages",
                     saved
             );
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("fullName", userProfileResponseInternal.getFullName());
+            data.put("fromUser", "ADMIN");
+            data.put("messagePreview", message.getContent());
+
+            NotificationEvent notificationEvent = NotificationEvent.builder()
+                    .channel("email")
+                    .recipient(userProfileResponseInternal.getEmail())
+                    .template("new_message")
+                    .data(data)
+                    .build();
+            try {
+                kafkaTemplate.send("notification-delivery", notificationEvent);
+            } catch (Exception e) {
+                log.error("Failed to send Kafka notification event", e);
+            }
+
         }
         else {
+
             // USER gửi → Gửi broadcast tới tất cả admin
             messagingTemplate.convertAndSend("/topic/admin", saved);
         }

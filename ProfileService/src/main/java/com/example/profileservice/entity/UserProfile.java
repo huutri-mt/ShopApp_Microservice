@@ -21,7 +21,6 @@ import java.util.List;
 public class UserProfile {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Thêm auto-increment
     int id;
 
     @Column(name = "full_name", nullable = false, length = 100)
@@ -36,9 +35,8 @@ public class UserProfile {
     @Column(name = "date_of_birth")
     LocalDate dateOfBirth;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
-    Gender gender;
+    String gender;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

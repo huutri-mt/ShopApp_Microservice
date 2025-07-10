@@ -34,10 +34,6 @@ public class ProfileCreationRequest {
     @NotNull(message = "Ngày sinh không được để trống")
     @Past(message = "Ngày sinh phải trong quá khứ")
     LocalDate dateOfBirth;
-
     @NotBlank(message = "Giới tính không được để trống")
-    @Pattern(regexp = "^(NAM|NỮ|KHÁC)$",
-            flags = Pattern.Flag.CASE_INSENSITIVE,
-            message = "Giới tính phải là NAM, NỮ hoặc KHÁC")
-    Gender gender;
+    String gender;
 }

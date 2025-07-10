@@ -3,6 +3,7 @@ package com.example.profileservice.service;
 import com.example.profileservice.dto.request.ProfileCreationRequest;
 import com.example.profileservice.dto.request.ProfileUpdateRequest;
 import com.example.profileservice.dto.response.UserProfileResponse;
+import com.example.profileservice.dto.response.UserProfileResponseInternal;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,4 +16,6 @@ public interface UserProfileService {
     UserProfileResponse updateUserProfile(ProfileUpdateRequest request);
     List<UserProfileResponse> getAllUserProfiles();
     String deleteUserProfile(Integer userId);
+    UserProfileResponseInternal getProfile(int userId);
+    UserProfileResponseInternal getProfile(String email);
 }

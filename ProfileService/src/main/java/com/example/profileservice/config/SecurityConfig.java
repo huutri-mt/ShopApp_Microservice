@@ -32,8 +32,6 @@ public class SecurityConfig {
 
     // Các endpoint public không cần xác thực
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/api-docs/**",
-            "/swagger-ui/**"
     };
 
     @Value("${auth.username}")
@@ -47,6 +45,7 @@ public class SecurityConfig {
     public SecurityConfig(CustomJwtDecoder customJwtDecoder) {
         this.customJwtDecoder = customJwtDecoder;
     }
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {

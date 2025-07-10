@@ -58,9 +58,9 @@
     <h2>Đơn hàng của bạn đã được xác nhận</h2>
 </div>
 
-<p>Xin chào <strong><span th:text="${username}">Khách hàng</span></strong>,</p>
+<p>Xin chào <strong><span th:text="${fullName}"></span></strong>,</p>
 
-<p>Cảm ơn bạn đã đặt hàng tại cửa hàng chúng tôi. Đơn hàng <strong>#<span th:text="${orderId}">12345</span></strong> đã được tiếp nhận và đang được xử lý.</p>
+<p>Cảm ơn bạn đã đặt hàng tại cửa hàng chúng tôi. Đơn hàng <strong>#<span th:text="${orderId}"></span></strong> đã được tiếp nhận và đang được xử lý.</p>
 
 <h3>Chi tiết đơn hàng:</h3>
 <table>
@@ -76,14 +76,14 @@
     <tr th:each="product : ${products}">
         <td th:text="${product.name}">Tên sản phẩm</td>
         <td th:text="${product.quantity}"></td>
-        <td th:text="${product.formattedPrice}"></td>
-        <td th:text="${product.formattedTotalPrice}"></td>
+        <td th:text="${product.price}"></td>
+        <td th:text="${product.totalprice}"></td>
     </tr>
     </tbody>
     <tfoot>
     <tr class="total-row">
         <td colspan="3" style="text-align: right;"><strong>Tổng cộng:</strong></td>
-        <td><strong th:text="${formattedTotalPrice}"></strong></td>
+        <td><strong th:text="${totalPrice}"></strong></td>
     </tr>
     </tfoot>
 </table>

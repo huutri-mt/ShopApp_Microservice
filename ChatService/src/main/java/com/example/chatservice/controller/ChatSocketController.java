@@ -1,5 +1,6 @@
 package com.example.chatservice.controller;
 
+import com.example.chatservice.constan.UrlConstant;
 import com.example.chatservice.dto.response.ChatMessage;
 import com.example.chatservice.entity.Message;
 import com.example.chatservice.service.ChatService;
@@ -16,7 +17,7 @@ import java.util.List;
 
 @Slf4j
 @Controller
-@RequestMapping("/api/v1/chat")
+@RequestMapping(UrlConstant.API_V1_CHAT_USER)
 @RequiredArgsConstructor
 public class ChatSocketController {
     private final ChatService chatService;

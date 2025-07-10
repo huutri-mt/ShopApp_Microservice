@@ -43,7 +43,6 @@ public class MailServiceImpl implements MailService {
             context.setVariables(data);
 
             String html = templateEngine.process(templateName, context);
-
             helper.setTo(to);
             helper.setSubject((String) data.getOrDefault("subject", "Thông báo từ hệ thống"));
             helper.setText(html, true);

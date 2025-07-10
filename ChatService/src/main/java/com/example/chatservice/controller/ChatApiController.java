@@ -1,5 +1,6 @@
 package com.example.chatservice.controller;
 
+import com.example.chatservice.constan.UrlConstant;
 import com.example.chatservice.entity.Message;
 import com.example.chatservice.service.ChatService;
 import com.example.chatservice.util.SecurityUtil;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/chat")
+@RequestMapping(UrlConstant.API_V1_CHAT_USER)
 @RequiredArgsConstructor
 @CrossOrigin
 public class ChatApiController {

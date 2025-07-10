@@ -1,10 +1,7 @@
 package com.example.authenticationservice.service.impl;
 
 import com.example.authenticationservice.dto.request.*;
-import com.example.authenticationservice.dto.response.ExchangeTokenResponse;
-import com.example.authenticationservice.dto.response.OutboundUserResponse;
-import com.example.authenticationservice.dto.response.IntrospectResponse;
-import com.example.authenticationservice.dto.response.LoginResponse;
+import com.example.authenticationservice.dto.response.*;
 import com.example.authenticationservice.entity.AuthenUser;
 import com.example.authenticationservice.entity.InvalidatedToken;
 import com.example.authenticationservice.exception.AppException;
@@ -14,12 +11,14 @@ import com.example.authenticationservice.repository.InvalidatedTokenRepository;
 import com.example.authenticationservice.repository.httpClient.*;
 import com.example.authenticationservice.service.AuthService;
 import com.example.authenticationservice.utill.JwtUtil;
+import com.example.event.dto.NotificationEvent;
 import com.nimbusds.jose.JOSEException;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,6 +46,9 @@ public class AuthenServiceImpl implements AuthService {
     private InvalidatedTokenRepository invalidatedTokenRepository;
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Autowired
     private FacebookIdentityClient facebookIdentityClient;
@@ -81,7 +83,7 @@ public class AuthenServiceImpl implements AuthService {
         if(authRepository.existsUserByUserName(request.getUserName())) {
             throw new AppException(ErrorCode.USERNAME_ALREADY_EXISTS);
         }
-        if(Boolean.TRUE.equals(profileClient.checkEmailExists(request.getEmail()))) {
+        if(profileClient.checkEmailExists(request.getEmail()).getBody() == true) {
             throw  new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
         AuthenUser authenUser = AuthenUser.builder()
@@ -92,7 +94,8 @@ public class AuthenServiceImpl implements AuthService {
                 .build();
 
 
-        authRepository.save(authenUser);
+        authRepository.saveAndFlush(authenUser);
+        log.info("User ID: {}", authenUser.getId());
         ProfileCreationRequest profileCreationRequest = ProfileCreationRequest.builder()
                 .userId(authenUser.getId())
                 .fullName(request.getFullname())
@@ -101,7 +104,6 @@ public class AuthenServiceImpl implements AuthService {
                 .dateOfBirth(request.getDateOfBirth())
                 .gender(request.getGender())
                 .build();
-
         try {
             profileClient.createProfile(profileCreationRequest);
         } catch (Exception e) {
@@ -109,6 +111,7 @@ public class AuthenServiceImpl implements AuthService {
             log.error("Failed to create profile", e);
             throw new AppException(ErrorCode.PROFILE_CREATION_FAILED);
         }
+
         return "User created successfully";
     }
 
@@ -249,7 +252,7 @@ public class AuthenServiceImpl implements AuthService {
 
         // Kiểm tra hoặc tạo user
         AuthenUser authenUser;
-        if(Boolean.FALSE.equals(profileClient.checkEmailExists(userInfo.getEmail()))) {
+        if(equals(profileClient.checkEmailExists(userInfo.getEmail())) == false) {
             authenUser = AuthenUser.builder()
                     .userName(userInfo.getEmail().split("@")[0])
                     .role("USER")
@@ -271,10 +274,10 @@ public class AuthenServiceImpl implements AuthService {
         }
         else {
             String email = userInfo.getEmail();
-            int userId = profileClient.getProfileByEmail(email).getBody();
+            UserProfileResponseInternal profileResponse = profileClient.getProfileByEmail(email).getBody();
+            int userId = profileResponse.getUserId();
             authenUser = authRepository.getUserById(userId);
         }
-
         String jwt = jwtUtil.generateToken(authenUser);
         log.info("token: {}",jwt);
         return LoginResponse.builder().token(jwt).build();
@@ -300,7 +303,23 @@ public class AuthenServiceImpl implements AuthService {
         authenUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
         authenUser.setLastPasswordChange(LocalDate.now());
 
+        UserProfileResponseInternal userProfileResponseInternal = profileClient.getProfile(authenUser.getId()).getBody();
         authRepository.save(authenUser);
+        Map<String, Object> data = new HashMap<>();
+        data.put("fullName", userName);
+        data.put("changeTime", LocalDate.now());
+
+        NotificationEvent notificationEvent = NotificationEvent.builder()
+                .channel("email")
+                .recipient(userProfileResponseInternal.getEmail())
+                .template("password_changed")
+                .data(data)
+                .build();
+        try {
+            kafkaTemplate.send("notification-delivery", notificationEvent);
+        } catch (Exception e) {
+            log.error("Failed to send Kafka notification event", e);
+        }
 
         return "Password changed successfully";
     }

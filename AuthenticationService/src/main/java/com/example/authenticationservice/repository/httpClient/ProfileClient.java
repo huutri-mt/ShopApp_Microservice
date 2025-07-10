@@ -1,6 +1,7 @@
 package com.example.authenticationservice.repository.httpClient;
 
 import com.example.authenticationservice.dto.request.ProfileCreationRequest;
+import com.example.authenticationservice.dto.response.UserProfileResponseInternal;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,11 @@ public interface ProfileClient {
     @GetMapping("/check-email")
     ResponseEntity<Boolean> checkEmailExists(@RequestParam("email") String email);
 
-    @GetMapping("/get-by-email")
-    ResponseEntity<Integer> getProfileByEmail(@RequestParam("email") String email);
+    @GetMapping("/get-profile")
+    ResponseEntity<UserProfileResponseInternal> getProfile(@RequestParam("userId") int userId);
+
+
+    @GetMapping("/get-profile-email")
+    ResponseEntity<UserProfileResponseInternal> getProfileByEmail(@RequestParam("email") String email);
+
 }
