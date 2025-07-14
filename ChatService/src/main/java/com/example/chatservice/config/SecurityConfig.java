@@ -36,6 +36,7 @@ public class SecurityConfig {
             "/topic/**",
             "/queue/**",
             "/app/**",
+            "/api/v1/user/**",
     };
 
     @Value("${auth.username}")

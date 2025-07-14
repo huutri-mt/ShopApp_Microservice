@@ -45,6 +45,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             "/user/product/{productId}",
             "/user/category",
             "/user/category/{categoryId}",
+            "/search",
 
     };
 

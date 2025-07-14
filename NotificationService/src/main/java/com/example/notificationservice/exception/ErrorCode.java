@@ -14,10 +14,9 @@ public enum ErrorCode {
     PROFILE_CREATION_FAILED(1003, "Tạo hồ sơ thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     PROFILE_UPDATE_FAILED(1004, "Cập nhật hồ sơ thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     PROFILE_DELETION_FAILED(1005, "Xóa hồ sơ thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
-
-    // --- Lỗi chung ---
     INTERNAL_SERVER_ERROR(1006, "Lỗi máy chủ nội bộ", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_ADDRESS_DATA(1007, "Dữ liệu địa chỉ không hợp lệ", HttpStatus.BAD_REQUEST),
+
 
     // --- Lỗi liên quan đến người dùng/tài khoản ---
     EMAIL_ALREADY_EXISTS(2001, "Email đã tồn tại", HttpStatus.CONFLICT),
@@ -27,13 +26,19 @@ public enum ErrorCode {
     USER_CREATION_FAILED(2005, "Tạo người dùng thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     ADDRESS_NOT_FOUND(2006, "Không tìm thấy địa chỉ", HttpStatus.NOT_FOUND),
     ADDRESS_ALREADY_EXISTS(2007, "Địa chỉ đã tồn tại", HttpStatus.CONFLICT),
-
+    EMAIL_INVALID(2008, "Email không hợp lệ", HttpStatus.BAD_REQUEST),
     // --- Lỗi xác thực & phân quyền ---
-    UNAUTHORIZED(3001, "Không có quyền truy cập", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED(3001, "Truy cập trái phép", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(3002, "Truy cập bị từ chối", HttpStatus.FORBIDDEN),
-    INVALID_CREDENTIALS(3003, "Tên đăng nhập hoặc mật khẩu không đúng", HttpStatus.UNAUTHORIZED),
-    TOKEN_EXPIRED(3004, "Token xác thực đã hết hạn", HttpStatus.UNAUTHORIZED),
+    INVALID_CREDENTIALS(3003, "Tên người dùng hoặc mật khẩu không đúng", HttpStatus.UNAUTHORIZED),
+    TOKEN_EXPIRED(3004, "Token xác thực hết hạn", HttpStatus.UNAUTHORIZED),
     TOKEN_INVALID(3005, "Token xác thực không hợp lệ", HttpStatus.UNAUTHORIZED),
+    AUTH_TOKEN_INVALID(3006, "Token xác thực không hợp lệ", HttpStatus.UNAUTHORIZED),
+    TOKEN_PARSING_ERROR(3007, "Lỗi phân tích token xác thực", HttpStatus.BAD_REQUEST),
+    UNKNOWN_PROVIDER(3008, "Nhà cung cấp xác thực không xác định", HttpStatus.BAD_REQUEST),
+    INVALID_REQUEST(3000, "Yêu cầu không hợp lệ", HttpStatus.BAD_REQUEST),
+    REDIRECT_URI_MISMATCH(3009, "Redirect URI không khớp", HttpStatus.BAD_REQUEST),
+    OAUTH_PROVIDER_ERROR(3010, "Lỗi nhà cung cấp OAuth", HttpStatus.BAD_REQUEST),
 
     // --- Lỗi khác ---
     UNCATEGORIZED_EXCEPTION(9999, "Lỗi không xác định", HttpStatus.INTERNAL_SERVER_ERROR);

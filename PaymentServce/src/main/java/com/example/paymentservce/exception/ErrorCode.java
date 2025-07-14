@@ -19,7 +19,15 @@ public enum ErrorCode {
     // --- Lỗi xác thực & ủy quyền ---
     UNAUTHORIZED(3001, "Truy cập trái phép", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(3002, "Truy cập bị từ chối", HttpStatus.FORBIDDEN),
-
+    INVALID_CREDENTIALS(3003, "Tên người dùng hoặc mật khẩu không đúng", HttpStatus.UNAUTHORIZED),
+    TOKEN_EXPIRED(3004, "Token xác thực hết hạn", HttpStatus.UNAUTHORIZED),
+    TOKEN_INVALID(3005, "Token xác thực không hợp lệ", HttpStatus.UNAUTHORIZED),
+    AUTH_TOKEN_INVALID(3006, "Token xác thực không hợp lệ", HttpStatus.UNAUTHORIZED),
+    TOKEN_PARSING_ERROR(3007, "Lỗi phân tích token xác thực", HttpStatus.BAD_REQUEST),
+    UNKNOWN_PROVIDER(3008, "Nhà cung cấp xác thực không xác định", HttpStatus.BAD_REQUEST),
+    INVALID_REQUEST(3000, "Yêu cầu không hợp lệ", HttpStatus.BAD_REQUEST),
+    REDIRECT_URI_MISMATCH(3009, "Redirect URI không khớp", HttpStatus.BAD_REQUEST),
+    OAUTH_PROVIDER_ERROR(3010, "Lỗi nhà cung cấp OAuth", HttpStatus.BAD_REQUEST),
 
     // --- Lỗi liên quan đến sản phẩm ---
     PRODUCT_NOT_AVAILABLE (4008, "Sản phẩm không có sẵn", HttpStatus.NOT_FOUND),

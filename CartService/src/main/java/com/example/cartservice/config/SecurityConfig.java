@@ -26,11 +26,11 @@ public class SecurityConfig {
     // Các endpoint internal dùng Basic Auth
     private static final String[] INTERNAL_ENDPOINTS = {
         "/api/v1/internal/cart/**",
-        "/api/v1/internal/product/**",
     };
 
     // Các endpoint public không cần xác thực
     private static final String[] PUBLIC_ENDPOINTS = {
+        "/api/v1/user/cart/**",
     };
 
     @Value("${auth.username}")

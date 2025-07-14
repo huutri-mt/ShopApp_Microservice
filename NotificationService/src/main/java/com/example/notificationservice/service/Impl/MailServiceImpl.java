@@ -1,5 +1,7 @@
 package com.example.notificationservice.service.Impl;
 
+import com.example.notificationservice.exception.AppException;
+import com.example.notificationservice.exception.ErrorCode;
 import com.example.notificationservice.service.MailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -29,7 +31,7 @@ public class MailServiceImpl implements MailService {
         try {
             if (to == null || !to.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
                 log.error("Email không hợp lệ: {}", to);
-                throw new IllegalArgumentException("Email không hợp lệ: " + to);
+                throw new AppException(ErrorCode.EMAIL_INVALID);
             }
 
             MimeMessage message = mailSender.createMimeMessage();

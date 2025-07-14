@@ -32,8 +32,7 @@ public class SecurityConfig {
     // Các endpoint public không cần xác thực
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/v1/user/product/**",
-            "/api/v1/user/category",
-            "/api/v1/user/category/{id}"
+            "/api/v1/user/category/**",
     };
 
     @Value("${auth.username}")

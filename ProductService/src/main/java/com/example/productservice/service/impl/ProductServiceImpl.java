@@ -1,5 +1,6 @@
 package com.example.productservice.service.impl;
 
+import com.example.event.dto.ProductCreatedEvent;
 import com.example.productservice.dto.request.ProductCreationRequest;
 import com.example.productservice.dto.request.ProductUpdateRequest;
 import com.example.productservice.dto.response.ProductResponse;
@@ -13,6 +14,7 @@ import com.example.productservice.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,6 +30,8 @@ public class ProductServiceImpl implements ProductService {
     private ProductRepository productRepository;
     @Autowired
     private CategoryRepository categoryRepository;
+    @Autowired
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     public List<ProductResponse> getProduct() {
         List<ProductResponse> productResponses = new ArrayList<>();
@@ -91,13 +95,17 @@ public class ProductServiceImpl implements ProductService {
         if (request == null) {
             throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
-        if(productRepository.existsByName(request.getName())) {
+
+        if (productRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.PRODUCT_ALREADY_EXISTS);
         }
+
         try {
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-            productRepository.save(
+
+            // Lưu product trước để lấy được ID
+            Product savedProduct = productRepository.save(
                     Product.builder()
                             .name(request.getName())
                             .description(request.getDescription())
@@ -108,12 +116,31 @@ public class ProductServiceImpl implements ProductService {
                             .quantity(request.getQuantity())
                             .build()
             );
+
+          // Gửi sự kiện Kafka sau khi lưu thành công
+            ProductCreatedEvent event = ProductCreatedEvent.builder()
+                    .id(savedProduct.getId())
+                    .name(savedProduct.getName())
+                    .description(savedProduct.getDescription())
+                    .price(savedProduct.getPrice())
+                    .brand(savedProduct.getBrand())
+                    .category(savedProduct.getCategory().getName())
+                    .status(savedProduct.getStatus())
+                    .build();
+
+            try {
+                kafkaTemplate.send("product-created-topic", event);
+            } catch (Exception e) {
+                log.error("Failed to send Kafka product created envet", e);
+            }
+
             return "Product created successfully";
         } catch (Exception e) {
-            log.error("Error creating product: {}", e.getMessage());
+            log.error("Error creating product: {}", e.getMessage(), e);
             return "Failed to create product";
         }
     }
+
 
     public String updateProduct(Integer productId, ProductUpdateRequest request) {
         if (request == null) {
