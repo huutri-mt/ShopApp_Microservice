@@ -165,17 +165,18 @@ public UserProfileResponseInternal getProfile(String email) {
         userProfileRepository.save(userProfile);
 
         Map<String, Object> data = new HashMap<>();
-        data.put("fullName", request.getFullName());
+        data.put("fullName", userProfile.getFullName());
         data.put("updateTime", LocalDate.now());
 
         NotificationEvent notificationEvent = NotificationEvent.builder()
                 .channel("email")
-                .recipient(request.getEmail())
+                .recipient(userProfile.getEmail())
                 .template("user_updated")
                 .data(data)
                 .build();
         try {
             kafkaTemplate.send("notification-delivery", notificationEvent);
+            log.info("email: ",notificationEvent.getRecipient());
         } catch (Exception e) {
             log.error("Failed to send Kafka notification event", e);
         }

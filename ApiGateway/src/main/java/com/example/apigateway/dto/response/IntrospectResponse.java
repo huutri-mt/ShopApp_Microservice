@@ -3,14 +3,19 @@ package com.example.apigateway.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class IntrospectResponse {
-    private boolean isValid;
+    private boolean valid;
+    // Add getter/setter or use @Data
+
+    // Add this method if not using boolean naming convention
+    public boolean isValid() {
+        return valid;
+    }
 }
+
+
 

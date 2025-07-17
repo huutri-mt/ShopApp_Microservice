@@ -28,7 +28,7 @@ public class UserProfileController {
         return ResponseEntity.ok(userProfileService.getMyInfo());
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
+
     @PutMapping("/update")
     public ResponseEntity<UserProfileResponse> updateProfile(
             @RequestBody ProfileUpdateRequest request) {
