@@ -31,7 +31,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PACKAGE, makeFinal = true)
 public class AuthenticationFilter implements GlobalFilter, Ordered {
-
     AuthService authService;
     ObjectMapper objectMapper;
 
@@ -65,11 +64,9 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         }
 
         String token = authHeader.getFirst().replace("Bearer ", "");
-        log.info("Token: {}", token);
 
         return authService.introspect(token)
                 .flatMap(response -> {
-                    log.info("Authentication Success: {}", response.isValid());
                     if (response.isValid()) {
                         return chain.filter(exchange);
                     } else {
@@ -77,7 +74,6 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
                     }
                 })
                 .onErrorResume(error -> {
-                    log.error("Token introspect failed", error);
                     return unauthenticated(exchange.getResponse());
                 });
     }

@@ -20,7 +20,7 @@ public class NotificationController {
 
     @KafkaListener(topics = "notification-delivery")
     public void handleNotification(NotificationEvent request) {
-        log.info("Received notification message: {}", request);
+        log.info("Received notification message: {}", request.getRecipient());
         mailService.send(request.getRecipient(), request.getTemplate(), request.getData());
 
     }
